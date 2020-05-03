@@ -10,6 +10,7 @@ import os, sys
 import threading
 import time
 import socket
+import json
 
 """
 NOTES - pygame events and values
@@ -54,33 +55,33 @@ class XboxController(threading.Thread):
 
     #internal ids for the xbox controls
     class XboxControls():
-        LTHUMBX = 0
+        LTHUMBX = 2
         LTHUMBY = 1
-        RTHUMBX = 2
+        RTHUMBX = 4
         RTHUMBY = 3
-        RTRIGGER = 4
-        LTRIGGER = 5
+        RTRIGGER = 400
+        LTRIGGER = 500
         A = 6
         B = 7
-        X = 8
-        Y = 9
-        LB = 10
-        RB = 11
-        BACK = 12
-        START = 13
-        XBOX = 14
-        LEFTTHUMB = 15
-        RIGHTTHUMB = 16
+        X = 9
+        Y = 10
+        LB = 12
+        RB = 13
+        BACK = 100
+        START = 101
+        XBOX = 102
+        LEFTTHUMB = 103
+        RIGHTTHUMB = 104
         DPAD = 17
 
     #pygame axis constants for the analogue controls of the xbox controller
     class PyGameAxis():
-        LTHUMBX = 0
+        LTHUMBX = 2
         LTHUMBY = 1
-        RTHUMBX = 2
+        RTHUMBX = 4
         RTHUMBY = 3
-        RTRIGGER = 4
-        LTRIGGER = 5
+        RTRIGGER = 400
+        LTRIGGER = 500
 
     #pygame constants for the buttons of the xbox controller
     class PyGameButtons():
@@ -353,7 +354,7 @@ if __name__ == '__main__':
 
 
     def setup_server():
-        host = 'localhost'  # Standard loopback interface address (localhost)
+        host = '0.0.0.0'  # Standard loopback interface address (localhost)
         port = 65432        # Port to listen on (non-privileged ports are > 1023)
         try:
             global s
@@ -367,14 +368,17 @@ if __name__ == '__main__':
             print("could not bind to socket",e)
 
 
-    #generic call back
+    #Send Json data to client with button pressed
     def controlCallBack(xboxControlId, value):
         print "{},{}".format(xboxControlId, value)
         # Establish connection with client. 
 
         c, addr = s.accept()      
         #print 'Got connection from', addr  
-        c.send("{},{}".format(xboxControlId, value)) 
+        button_list = {"id": xboxControlId, "Value": value} # a real dict.
+        data = json.dumps(button_list)
+        c.send(data.encode())
+        #c.send("{}, {}".format(xboxControlId,value)) 
         
             
         

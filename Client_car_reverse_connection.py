@@ -1,12 +1,16 @@
 import socket
 import time
+import json
+
 
 
 
 #variables
-host = "localhost"
+host = "192.168.0.101"
 port = 65432
-conn_key = "jhhgefghchcc"
+
+Button_List = []
+
 LB_press = "12,1"
 LB_release ="12,0"
 RB_press = "13,1"
@@ -21,16 +25,82 @@ X_Button_press = "9,1"
 X_Button_release = "9,0"
 
 D_pad_left_press ="17,(-1, 0)"
-D_pad_left_release ="17,(0, 0)"
+#D_pad_left_release ="17,(0, 0)"
 D_pad_up_press ="17,(0, 1)"
 D_pad_up_release ="17,(0, 0)"
 D_pad_right_press ="17,(1, 0)"
-D_pad_right_release ="17,(0, 0)"
+#D_pad_right_release ="17,(0, 0)"
 D_pad_down_press ="17,(0, -1)"
-D_pad_down_release ="17,(0, 0)"
+#D_pad_down_release ="17,(0, 0)"
+
+Joypad_left_button = 1
+Joypad_left_button_stop_value = "0"
+Joypad_left_button_back_value = range(-1,-9,-1)
+
+
+import RPi.GPIO as GPIO
+from time import sleep
+import time 
+
+#setmode
+GPIO.setmode(GPIO.BCM)
+GPIO.setwarnings(False)
+#Variables
+Motor1A = 20
+Motor1B = 22
+Motor1E = 23
+Motor2A = 24
+Motor2B = 21
+Motor2E = 19
+
+#Setup GPIO pins
+GPIO.setup(Motor1A,GPIO.OUT)
+GPIO.setup(Motor1B,GPIO.OUT)
+GPIO.setup(Motor1E,GPIO.OUT)
+
+GPIO.setup(Motor2A,GPIO.OUT)
+GPIO.setup(Motor2B,GPIO.OUT)
+GPIO.setup(Motor2E,GPIO.OUT)
 
 
 class client(object):
+
+
+    def forward(self):
+        print("Going forwards")
+        GPIO.output(Motor1A,GPIO.LOW)
+        GPIO.output(Motor1B,GPIO.LOW)
+        GPIO.output(Motor1E,GPIO.HIGH)
+        GPIO.output(Motor2A,GPIO.HIGH)
+        GPIO.output(Motor2B,GPIO.LOW)
+        GPIO.output(Motor2E,GPIO.HIGH)
+        
+        
+
+    def stop(self):
+        print("Stop")
+        GPIO.output(Motor1A,GPIO.LOW)
+        GPIO.output(Motor1B,GPIO.LOW)
+        GPIO.output(Motor1E,GPIO.LOW)
+        GPIO.output(Motor2B,GPIO.LOW)
+        GPIO.output(Motor2E,GPIO.LOW)
+        
+
+    def backward(self):
+        print("Going backwards")
+        GPIO.output(Motor1A,GPIO.HIGH)
+        GPIO.output(Motor1B,GPIO.HIGH)
+        GPIO.output(Motor1E,GPIO.LOW)
+
+        GPIO.output(Motor2A,GPIO.LOW)
+        GPIO.output(Motor2B,GPIO.HIGH)
+        GPIO.output(Motor2E,GPIO.LOW)
+    
+
+    def cleanup(self):
+        GPIO.cleanup()
+
+
     
     def connect(self):
         while True:
@@ -38,66 +108,34 @@ class client(object):
                 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
                 s.connect((host,port))
                 #s.send(conn_key)
-                data = s.recv(2024).decode("utf-8")
-                #print(data)
-                if data in LB_press:
-                    print("LB pressed")
-                elif data in LB_release:
-                    print("LB relesed")
-                elif data in RB_press:
-                    print("RB pressed")
-                elif data in RB_release:
-                    print("RB released")
-                elif data in Y_button_press:
-                    print("Y button pressed")
-                elif data in Y_button_release:
-                    print("Y button released")
-                elif data in B_Button_press:
-                    print("B button pressed")
-                elif data in B_Button_release:
-                    print("B button released")
-                elif data in A_Button_press:
-                    print("A button is pressed")
-                elif data in A_Button_release:
-                    print("A button released")
-                elif data in X_Button_press:
-                    print("X button pressed")
-                elif data in X_Button_release:
-                    print("X button released")
+                data  = s.recv(1024).decode("utf-8")
+                y = json.loads(data)
 
-                elif data in D_pad_left_press:
-                    print("Left D pad pressed")
-                elif data in D_pad_left_release:
-                    print("Left D pad released")
-                elif data in D_pad_up_press:
-                    print("Up D pad pressed")
-                elif data in D_pad_up_release:
-                    print("up D pad relesed")
-                elif data in D_pad_right_press:
-                    print("Right D pad pressed")
-                elif data in D_pad_right_release:
-                    print("Right D pad released")
-                elif data in D_pad_down_press:
-                    print("Down D pad pressed")
-                elif data in D_pad_down_release:
-                    print("Down D pad released")
+                button_id = y["id"]
+                button_value_drive = y["Value"]
+            
+                if button_id == Joypad_left_button and int(button_value_drive) > 2:
+                    self.forward()
 
-                else:
-                    print("Function not mapped yet :)")
+                if button_id == Joypad_left_button and int(button_value_drive) == 0:
+                    self.stop()
+
+                if button_id == Joypad_left_button and int(button_value_drive) < 0:
+                    self.backward()
                     
-
-                
                     
-
-
             except Exception as e:
-                print("could not connect to RC car, reconnecting....",e)
-                time.sleep(5)
+                print("reconnecting.....")
+                time.sleep(0.75)
                 self.connect()
+                pass
+                
 
 def main():
     Client = client()
     Client.connect()
+    client.cleanup()
+
 
 
 if __name__ == "__main__":
