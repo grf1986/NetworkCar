@@ -9,6 +9,8 @@ from pygame.locals import *
 import os, sys
 import threading
 import time
+import socket
+import json
 
 """
 NOTES - pygame events and values
@@ -53,33 +55,33 @@ class XboxController(threading.Thread):
 
     #internal ids for the xbox controls
     class XboxControls():
-        LTHUMBX = 0
+        LTHUMBX = 2
         LTHUMBY = 1
-        RTHUMBX = 2
+        RTHUMBX = 4
         RTHUMBY = 3
-        RTRIGGER = 4
-        LTRIGGER = 5
+        RTRIGGER = 400
+        LTRIGGER = 500
         A = 6
         B = 7
-        X = 8
-        Y = 9
-        LB = 10
-        RB = 11
-        BACK = 12
-        START = 13
-        XBOX = 14
-        LEFTTHUMB = 15
-        RIGHTTHUMB = 16
+        X = 9
+        Y = 10
+        LB = 12
+        RB = 13
+        BACK = 100
+        START = 101
+        XBOX = 102
+        LEFTTHUMB = 103
+        RIGHTTHUMB = 104
         DPAD = 17
 
     #pygame axis constants for the analogue controls of the xbox controller
     class PyGameAxis():
-        LTHUMBX = 0
+        LTHUMBX = 2
         LTHUMBY = 1
-        RTHUMBX = 2
+        RTHUMBX = 4
         RTHUMBY = 3
-        RTRIGGER = 4
-        LTRIGGER = 5
+        RTRIGGER = 400
+        LTRIGGER = 500
 
     #pygame constants for the buttons of the xbox controller
     class PyGameButtons():
@@ -342,14 +344,44 @@ class XboxController(threading.Thread):
         #if the button is down its 1, if the button is up its 0
         value = 1 if eventType == JOYBUTTONDOWN else 0
         return value
+
+
+    
     
 #tests
 if __name__ == '__main__':
+    #startServer
 
-    #generic call back
+
+    def setup_server():
+        host = '0.0.0.0'  # Standard loopback interface address (localhost)
+        port = 65432        # Port to listen on (non-privileged ports are > 1023)
+        try:
+            global s
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+            s.bind((host,port))
+            print("Server running on port: " , port)
+            s.listen(5)
+            print("socket is listening and waiting for connections")
+           
+        except Exception as e:
+            print("could not bind to socket",e)
+
+
+    #Send Json data to client with button pressed
     def controlCallBack(xboxControlId, value):
-        print "Control Id = {}, Value = {}".format(xboxControlId, value)
+        print "{},{}".format(xboxControlId, value)
+        # Establish connection with client. 
 
+        c, addr = s.accept()      
+        #print 'Got connection from', addr  
+        button_list = {"id": xboxControlId, "Value": value} # a real dict.
+        data = json.dumps(button_list)
+        c.send(data.encode())
+        #c.send("{}, {}".format(xboxControlId,value)) 
+        
+            
+        
     #specific callbacks for the left thumb (X & Y)
     def leftThumbX(xValue):
         print "LX {}".format(xValue)
@@ -362,6 +394,8 @@ if __name__ == '__main__':
     #setup the left thumb (X & Y) callbacks
     xboxCont.setupControlCallback(xboxCont.XboxControls.LTHUMBX, leftThumbX)
     xboxCont.setupControlCallback(xboxCont.XboxControls.LTHUMBY, leftThumbY)
+    setup_server()
+    
 
     try:
         #start the controller
