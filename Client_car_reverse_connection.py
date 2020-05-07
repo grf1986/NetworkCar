@@ -11,28 +11,6 @@ port = 65432
 
 Button_List = []
 
-# LB_press = "12,1"
-# LB_release ="12,0"
-# RB_press = "13,1"
-# RB_release = "13,0"
-# Y_button_press = "10,1"
-# Y_button_release = "10,0"
-# B_Button_press = "7,1"
-# B_Button_release = "7,0"
-# A_Button_press = "6,1"
-# A_Button_release = "6,0"
-# X_Button_press = "9,1"
-# X_Button_release = "9,0"
-
-# D_pad_left_press ="17,(-1, 0)"
-# #D_pad_left_release ="17,(0, 0)"
-# D_pad_up_press ="17,(0, 1)"
-# D_pad_up_release ="17,(0, 0)"
-# D_pad_right_press ="17,(1, 0)"
-# #D_pad_right_release ="17,(0, 0)"
-# D_pad_down_press ="17,(0, -1)"
-#D_pad_down_release ="17,(0, 0)"
-
 Joypad_left_button = 1
 Joypad_left_button_stop_value = "0"
 Joypad_left_button_back_value = range(-1,-9,-1)
