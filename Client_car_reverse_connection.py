@@ -113,10 +113,8 @@ class client(object):
                 #s.send(conn_key)
                 data  = s.recv(1024).decode("utf-8")
                 y = json.loads(data)
-
                 button_id = y["id"]
                 button_value_drive = y["Value"]
-
                 button_stear_value = y["Value"]
 
             
