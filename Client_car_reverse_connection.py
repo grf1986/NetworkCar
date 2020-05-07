@@ -128,10 +128,10 @@ class client(object):
                     self.backward()
 
                 if button_id == Joypad_right_button and int(button_stear_value) in steer_left:
-                    print("turning left")
+                    print("turning left..")
                 
                 if button_id == Joypad_right_button and int(button_stear_value) in steer_right:
-                    print("turning right")
+                    print("turning right...")
                     
             except Exception as e:
                 print("reconnecting.....")
